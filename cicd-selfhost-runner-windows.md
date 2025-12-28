@@ -1378,7 +1378,9 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- คืออะไร: เป็นโมเดลที่ Runner (เครื่อง Server ของเรา) จะทำการเชื่อมต่อออกไปหา GitHub เองอย่างสม่ำเสมอ (Long Polling) เพื่อถามว่า "มีงาน (Job) อะไรให้ทำไหม?" ถ้ามีก็จะดึง (Pull) งานนั้นมาทำ
+
+- ข้อดี: ไม่ต้องเปิด Port ขาเข้า (Inbound Port) ที่ Firewall ของเครื่อง Server หรือ Router เลย ทำให้ตั้งค่า Network ง่าย และปลอดภัยกว่า เพราะเป็นการเชื่อมต่อจากภายในออกสู่ภายนอก (Outbound only)
 
 </details>
 
@@ -1387,7 +1389,9 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- Push-based (แบบเก่า): GitHub ต้องยิง Request เข้ามาหา Server ของเรา ซึ่งบังคับให้เราต้องเปิด Port สาธารณะ (เช่น Port 80/443 หรือ Custom Port) รอไว้ ทำให้เสี่ยงต่อการถูกสแกน Port หรือถูกโจมตี (DDoS/Hacking) จากผู้ไม่หวังดี
+
+- Pull-based (ที่ใช้อยู่): Server ของเราเป็นฝ่ายเริ่มติดต่อไปหา GitHub เองผ่าน HTTPS (443) ดังนั้น Hacker ภายนอกจะไม่สามารถยิงเข้ามาหา Server เราได้โดยตรง เพราะเราปิดประตูขาเข้าไว้หมด
 
 </details>
 
@@ -1396,7 +1400,11 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- ความแน่นอน (Deterministic): npm ci จะติดตั้ง Package ตามเวอร์ชันที่ระบุไว้ใน package-lock.json เป๊ะๆ (ห้ามขาด ห้ามเกิน ห้ามใหม่กว่า) เพื่อให้มั่นใจว่า Code ที่รันบน Server จะเหมือนกับเครื่อง Dev 100%
+
+- ความเร็ว: npm ci จะลบ folder node_modules ทิ้งแล้วลงใหม่ทั้งหมด ซึ่งเร็วกว่าในกรณีของ CI/CD environment และมันจะไม่เสียเวลาคำนวณ Dependency tree ใหม่เหมือน npm install
+
+- ความปลอดภัย: ถ้า package-lock.json ไม่ตรงกับ package.json ตัวคำสั่ง npm ci จะแจ้ง Error ทันที (ไม่พยายามแก้ให้เองแบบ npm install) ช่วยกันข้อผิดพลาดก่อนขึ้น Production
 
 </details>
 
@@ -1405,7 +1413,9 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- ความเสี่ยงสูงมาก: เพราะใครก็ได้ในโลกสามารถ Fork โปรเจกต์เรา แล้วแก้ไฟล์ Workflow ให้รันคำสั่งอันตราย (เช่น ขุด Bitcoin, สแกนเครือข่ายภายในบ้าน/มหาลัย, หรือสั่ง rm -rf /) แล้วส่ง Pull Request เข้ามา
+
+- ผลกระทบ: ทันทีที่มี Pull Request เข้ามา Self-Hosted Runner จะดึงโค้ดอันตรายนั้นมารันบน เครื่องคอมพิวเตอร์จริงๆ ของเรา ซึ่งแฮกเกอร์อาจจะขโมยข้อมูลในเครื่อง หรือเจาะเข้า Network ส่วนตัวของเราได้ทันที (ต่างจาก GitHub Hosted ที่รันบน VM ชั่วคราวแล้วทิ้ง)
 
 </details>
 
@@ -1414,7 +1424,17 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- Nginx: คือ Web Server ประสิทธิภาพสูง ที่นิยมใช้เป็นตัวด่านหน้า (Frontend)
+
+- Reverse Proxy: คือการตั้งให้ Nginx รับ Request จาก User ภายนอก แล้วส่งต่อ (Forward) ไปให้ Node.js Container ที่รันอยู่ข้างหลัง
+
+- ความสำคัญ:
+
+   - Security: ซ่อนโครงสร้างภายใน ไม่ให้คนนอกรู้ว่า Node.js รันที่ Port ไหน หรือ IP อะไร
+
+   - Performance: ช่วยทำ Caching, Compression (Gzip) และจัดการ SSL/HTTPS ได้ดีกว่า Node.js โดยตรง
+
+   - Load Balancing: ถ้าในอนาคตเรามี Node.js หลายตัว Nginx สามารถช่วยกระจายงานได้
 
 </details>
 
@@ -1423,7 +1443,11 @@ taskkill /PID <PID> /F
 <details>
 <summary>คำตอบ</summary>
 
-เขียนคำตอบลงในช่องนี้
+- คำสั่งที่ใช้ (Command): Linux ใช้ bash (พวก ls, grep) ส่วน Windows ใช้ PowerShell (พวก dir, Get-Command) ซึ่งบางคำสั่งเขียนไม่เหมือนกัน
+
+- เรื่อง Path: Windows ใช้ Backslash (\) ส่วน Linux ใช้ Slash (/) ทำให้เวลาเขียน Code อ้างอิงไฟล์ต้องระวัง
+
+- Docker: บน Linux Docker ทำงานได้แบบ Native (เร็วกว่า) แต่บน Windows ต้องรันผ่าน WSL2 หรือ Hyper-V ซึ่งซับซ้อนกว่าเล็กน้อย
 
 </details>
 
